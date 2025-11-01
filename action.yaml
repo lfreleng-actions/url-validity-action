@@ -2,36 +2,173 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2025 The Linux Foundation
 
-# actions-template
-name: "🛠️ Actions Template"
-description: "Description of action"
-# Any relevant notes/observations can go here
+# url-validity-check-action
+name: '🌍 Check URL for Validity with WGET'
+description: 'Tests a given URL for a valid server response'
 
 inputs:
-  input:
-    description: "Description of input"
+  url:
+    description: 'Remote URL to check'
     required: true
 
 outputs:
-  output:
-    description: "Description of output"
-    value: ${{ steps.code.outputs.output }}
+  valid:
+    description: 'Set true when web URL/location exists'
+    value: ${{ steps.check-url.outputs.valid }}
+  http_code:
+    description: 'HTTP status code returned by the server'
+    value: ${{ steps.check-url.outputs.http_code }}
+  redirect_url:
+    description: 'Final URL after following redirects (if any)'
+    value: ${{ steps.check-url.outputs.redirect_url }}
+  redirect_valid:
+    description: >-
+      True if redirected URL is valid, false if invalid, empty if no redirect
+    value: ${{ steps.check-url.outputs.redirect_valid }}
+  redirect_loop:
+    description: 'True if redirect loop detected, false otherwise'
+    value: ${{ steps.check-url.outputs.redirect_loop }}
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
-    - name: "Friendly Name"
-      id: code
+    - name: 'Check URL for Validity'
+      id: check-url
       shell: bash
       run: |
-        # Friendly Name
-        input="${{ inputs.input }}"
-        if [ -z "$input" ]; then
-          echo "Error: mandatory input was not set/configured ❌"
-          exit 1
+        # Verify WGET is available
+        WGET_CMD=$(which wget)
+        if [ ! -x "$WGET_CMD" ]; then
+          echo 'Error: WGET command not found ❌'; exit 1
+        else
+          echo "Using WGET command: $WGET_CMD"
         fi
 
-        echo "output=$input" >> "$GITHUB_ENV"
-        echo "output=$input" >> "$GITHUB_OUTPUT"
-        echo "Action received: $input ✅"
-        echo "Action received: $input ✅" >> "$GITHUB_STEP_SUMMARY"
+        # Initialize outputs and variables for summary
+        valid="false"
+        http_code=""
+        redirect_url=""
+        redirect_valid=""
+        redirect_loop="false"
+
+        echo 'http_code=' >> "$GITHUB_OUTPUT"
+        echo 'redirect_url=' >> "$GITHUB_OUTPUT"
+        echo 'redirect_valid=' >> "$GITHUB_OUTPUT"
+        echo 'redirect_loop=false' >> "$GITHUB_OUTPUT"
+
+        # Function to check for redirect loops
+        check_redirect_loop() {
+          local REDIRECT_URLS="$1"
+
+          UNIQUE_REDIRECTS=$(echo "$REDIRECT_URLS" | \
+            grep -v '^$' | sort -u | wc -l)
+          TOTAL_REDIRECTS=$(echo "$REDIRECT_URLS" | grep -v '^$' | wc -l)
+
+          if [ "$UNIQUE_REDIRECTS" -lt "$TOTAL_REDIRECTS" ]; then
+            redirect_loop="true"
+            echo "redirect_loop=true" >> "$GITHUB_OUTPUT"
+            echo "⚠️  Redirect loop detected!"
+          else
+            redirect_loop="false"
+            echo "redirect_loop=false" >> "$GITHUB_OUTPUT"
+          fi
+        }
+
+        # Check URL for Validity with detailed output
+        TEMP_OUTPUT=$(mktemp)
+        if "$WGET_CMD" "${{ inputs.url }}" --spider --server-response \
+          --max-redirect=10 -O /dev/null 2>"$TEMP_OUTPUT"; then
+          echo 'URL/location was found and valid ✅'
+          valid="true"
+          echo 'valid=true' >> "$GITHUB_OUTPUT"
+
+          # Extract HTTP status code (last occurrence)
+          HTTP_CODE=$(grep -E "^  HTTP/[0-9.]+ [0-9]+" "$TEMP_OUTPUT" | \
+            tail -1 | awk '{print $2}' || echo "")
+          if [ -n "$HTTP_CODE" ]; then
+            http_code="$HTTP_CODE"
+            echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+            echo "HTTP Status Code: $HTTP_CODE"
+          fi
+
+          # Process redirects and check for loops
+          REDIRECT_URLS=$(grep -i "^  Location:" "$TEMP_OUTPUT" | \
+            sed 's/^.*Location: *//i' | tr -d '\r' || echo "")
+          if [ -n "$REDIRECT_URLS" ]; then
+            # Get the final redirect URL
+            FINAL_URL=$(echo "$REDIRECT_URLS" | tail -1)
+            redirect_url="$FINAL_URL"
+            echo "redirect_url=$FINAL_URL" >> "$GITHUB_OUTPUT"
+            echo "Redirect URL: $FINAL_URL"
+
+            # Check for redirect loops by looking for duplicate URLs
+            check_redirect_loop "$REDIRECT_URLS"
+
+            # Check if the final redirected URL is valid based on HTTP code
+            # Only 2xx codes indicate the resource was successfully reached
+            if [[ "$HTTP_CODE" =~ ^[0-9]+$ ]]; then
+              if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+                echo "redirect_valid=true" >> "$GITHUB_OUTPUT"
+                echo "✅ Final redirected URL is valid"
+              else
+                echo "redirect_valid=false" >> "$GITHUB_OUTPUT"
+                echo "❌ Final redirected URL is invalid (HTTP $HTTP_CODE)"
+              fi
+            else
+              echo "redirect_valid=false" >> "$GITHUB_OUTPUT"
+              echo "⚠️ Warning: Unable to determine redirect validity"
+              echo "   HTTP code: $HTTP_CODE"
+            fi
+          fi
+        else
+          echo 'URL/location was NOT found/valid ❌'
+          echo 'valid=false' >> "$GITHUB_OUTPUT"
+
+          # Extract HTTP error code even on failure
+          HTTP_CODE=$(grep -E "^  HTTP/[0-9.]+ [0-9]+" "$TEMP_OUTPUT" | \
+            tail -1 | awk '{print $2}' || echo "")
+          if [ -n "$HTTP_CODE" ]; then
+            http_code="$HTTP_CODE"
+            echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+            echo "HTTP Error Code: $HTTP_CODE"
+          fi
+
+          # Check for redirects even on failure (might redirect to invalid URL)
+          REDIRECT_URLS=$(grep -i "^  Location:" "$TEMP_OUTPUT" | \
+            sed 's/^.*Location: *//i' | tr -d '\r' || echo "")
+          if [ -n "$REDIRECT_URLS" ]; then
+            FINAL_URL=$(echo "$REDIRECT_URLS" | tail -1)
+            redirect_url="$FINAL_URL"
+            redirect_valid="false"
+            echo "redirect_url=$FINAL_URL" >> "$GITHUB_OUTPUT"
+            echo "redirect_valid=false" >> "$GITHUB_OUTPUT"
+            echo "Redirect URL (invalid): $FINAL_URL"
+
+            # Check for redirect loops even on failure
+            check_redirect_loop "$REDIRECT_URLS"
+          fi
+        fi
+
+        # Clean up temporary file
+        rm -f "$TEMP_OUTPUT"
+
+        # Generate step summary with results table
+        # yamllint disable rule:line-length
+        {
+          echo "## URL Validity Check Results"
+          echo ""
+          echo "| Field | Value |"
+          echo "|-------|-------|"
+          echo "| URL | ${{ inputs.url }} |"
+          echo "| Valid | $valid |"
+          if [ -n "$http_code" ]; then
+            echo "| HTTP Code | $http_code |"
+          fi
+          if [ -n "$redirect_url" ]; then
+            echo "| Redirect URL | $redirect_url |"
+          fi
+          if [ -n "$redirect_valid" ]; then
+            echo "| Redirect Valid | $redirect_valid |"
+          fi
+          echo "| Redirect Loop | $redirect_loop |"
+        } >> "$GITHUB_STEP_SUMMARY"
