@@ -35,6 +35,8 @@ runs:
     - name: 'Check URL for Validity'
       id: check-url
       shell: bash
+      env:
+        INPUT_URL: ${{ inputs.url }}
       run: |
         # Verify WGET is available
         WGET_CMD=$(which wget)
@@ -76,8 +78,8 @@ runs:
 
         # Check URL for Validity with detailed output
         TEMP_OUTPUT=$(mktemp)
-        if "$WGET_CMD" "${{ inputs.url }}" --spider --server-response \
-          --max-redirect=10 -O /dev/null 2>"$TEMP_OUTPUT"; then
+        if "$WGET_CMD" --spider --server-response \
+          --max-redirect=10 -O /dev/null -- "$INPUT_URL" 2>"$TEMP_OUTPUT"; then
           echo 'URL/location was found and valid ✅'
           valid="true"
           echo 'valid=true' >> "$GITHUB_OUTPUT"
@@ -159,13 +161,17 @@ runs:
           echo ""
           echo "| Field | Value |"
           echo "|-------|-------|"
-          echo "| URL | ${{ inputs.url }} |"
+          # Escape '|' so a URL containing pipes cannot break the table layout.
+          url_display="${INPUT_URL//|/\\|}"
+          echo "| URL | $url_display |"
           echo "| Valid | $valid |"
           if [ -n "$http_code" ]; then
             echo "| HTTP Code | $http_code |"
           fi
           if [ -n "$redirect_url" ]; then
-            echo "| Redirect URL | $redirect_url |"
+            # Escape '|' so a redirect URL with pipes cannot break the table.
+            redirect_display="${redirect_url//|/\\|}"
+            echo "| Redirect URL | $redirect_display |"
           fi
           if [ -n "$redirect_valid" ]; then
             echo "| Redirect Valid | $redirect_valid |"
