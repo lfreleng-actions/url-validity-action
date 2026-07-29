@@ -65,11 +65,13 @@ jobs:
       - name: 'Verify valid URL test passed'
         shell: bash
         run: |
-          if [ "${{ steps.test-valid.outputs.valid }}" != "true" ]; then
+          if [ "${STEPS_TEST_VALID_OUTPUTS_VALID}" != "true" ]; then
             echo 'Error: Valid URL test failed ❌'
             exit 1
           fi
           echo 'Valid URL test passed ✅'
+        env:
+          STEPS_TEST_VALID_OUTPUTS_VALID: ${{ steps.test-valid.outputs.valid }}
 
       # Test with an invalid URL that should fail
       - name: 'Test invalid URL'
@@ -81,11 +83,14 @@ jobs:
       - name: 'Verify invalid URL test failed as expected'
         shell: bash
         run: |
-          if [ "${{ steps.test-invalid.outputs.valid }}" != "false" ]; then
+          if [ "${STEPS_TEST_INVALID_OUTPUTS_VALID}" != "false" ]; then
             echo 'Error: Invalid URL test should have failed ❌'
             exit 1
           fi
           echo 'Invalid URL test failed as expected ✅'
+        env:
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_INVALID_OUTPUTS_VALID: ${{ steps.test-invalid.outputs.valid }}
 
       # Test with Linux Foundation URL (real world example)
       - name: 'Test Linux Foundation URL'
@@ -97,11 +102,13 @@ jobs:
       - name: 'Verify Linux Foundation URL test'
         shell: bash
         run: |
-          if [ "${{ steps.test-lf.outputs.valid }}" != "true" ]; then
+          if [ "${STEPS_TEST_LF_OUTPUTS_VALID}" != "true" ]; then
             echo 'Error: Linux Foundation URL test failed ❌'
             exit 1
           fi
           echo 'Linux Foundation URL test passed ✅'
+        env:
+          STEPS_TEST_LF_OUTPUTS_VALID: ${{ steps.test-lf.outputs.valid }}
 
       ### Enhanced Tests Using Local go-httpbin ###
 
@@ -115,16 +122,20 @@ jobs:
       - name: 'Verify 200 OK test results'
         shell: bash
         run: |
-          if [ "${{ steps.test-200.outputs.valid }}" != "true" ]; then
+          if [ "${STEPS_TEST_200_OUTPUTS_VALID}" != "true" ]; then
             echo 'Error: 200 OK test failed ❌'
             exit 1
           fi
-          if [ "${{ steps.test-200.outputs.http_code }}" != "200" ]; then
+          if [ "${STEPS_TEST_200_OUTPUTS_HTTP_CODE}" != "200" ]; then
             echo 'Error: Expected HTTP 200, got' \
-              '${{ steps.test-200.outputs.http_code }} ❌'
+              "${STEPS_TEST_200_OUTPUTS_HTTP_CODE} ❌"
             exit 1
           fi
           echo '200 OK test passed ✅'
+        env:
+          STEPS_TEST_200_OUTPUTS_VALID: ${{ steps.test-200.outputs.valid }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_200_OUTPUTS_HTTP_CODE: ${{ steps.test-200.outputs.http_code }}
 
       # Test 404 Not Found status
       - name: 'Test 404 Not Found status'
@@ -136,16 +147,20 @@ jobs:
       - name: 'Verify 404 Not Found test results'
         shell: bash
         run: |
-          if [ "${{ steps.test-404.outputs.valid }}" != "false" ]; then
+          if [ "${STEPS_TEST_404_OUTPUTS_VALID}" != "false" ]; then
             echo 'Error: 404 test should have failed ❌'
             exit 1
           fi
-          if [ "${{ steps.test-404.outputs.http_code }}" != "404" ]; then
+          if [ "${STEPS_TEST_404_OUTPUTS_HTTP_CODE}" != "404" ]; then
             echo 'Error: Expected HTTP 404, got' \
-              '${{ steps.test-404.outputs.http_code }} ❌'
+              "${STEPS_TEST_404_OUTPUTS_HTTP_CODE} ❌"
             exit 1
           fi
           echo '404 Not Found test passed ✅'
+        env:
+          STEPS_TEST_404_OUTPUTS_VALID: ${{ steps.test-404.outputs.valid }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_404_OUTPUTS_HTTP_CODE: ${{ steps.test-404.outputs.http_code }}
 
       # Test single redirect
       - name: 'Test single redirect'
@@ -157,30 +172,41 @@ jobs:
       - name: 'Verify single redirect test results'
         shell: bash
         run: |
-          if [ "${{ steps.test-redirect-1.outputs.valid }}" != "true" ]; then
+          if [ "${STEPS_TEST_REDIRECT_1_OUTPUTS_VALID}" != "true" ]; then
             echo 'Error: Single redirect test failed ❌'
             exit 1
           fi
-          if [ "${{ steps.test-redirect-1.outputs.http_code }}" != "200" ]; then
+          if [ "${STEPS_TEST_REDIRECT_1_OUTPUTS_HTTP_CODE}" != "200" ]; then
             echo 'Error: Expected final HTTP 200, got' \
-              '${{ steps.test-redirect-1.outputs.http_code }} ❌'
+              "${STEPS_TEST_REDIRECT_1_OUTPUTS_HTTP_CODE} ❌"
             exit 1
           fi
-          if [ -z "${{ steps.test-redirect-1.outputs.redirect_url }}" ]; then
+          if [ -z "${STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_URL}" ]; then
             echo 'Error: Expected redirect URL to be captured ❌'
             exit 1
           fi
-          if [ "${{ steps.test-redirect-1.outputs.redirect_valid }}" != "true" ]
+          if [ "${STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_VALID}" != "true" ]
           then
             echo 'Error: Expected redirect to be valid ❌'
             exit 1
           fi
-          if [ "${{ steps.test-redirect-1.outputs.redirect_loop }}" != "false" ]
+          if [ "${STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_LOOP}" != "false" ]
           then
             echo 'Error: Expected no redirect loop ❌'
             exit 1
           fi
           echo 'Single redirect test passed ✅'
+        env:
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_1_OUTPUTS_VALID: ${{ steps.test-redirect-1.outputs.valid }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_1_OUTPUTS_HTTP_CODE: ${{ steps.test-redirect-1.outputs.http_code }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_URL: ${{ steps.test-redirect-1.outputs.redirect_url }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_VALID: ${{ steps.test-redirect-1.outputs.redirect_valid }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_LOOP: ${{ steps.test-redirect-1.outputs.redirect_loop }}
 
       # Test multiple redirects
       - name: 'Test multiple redirects'
@@ -192,30 +218,41 @@ jobs:
       - name: 'Verify multiple redirects test results'
         shell: bash
         run: |
-          if [ "${{ steps.test-redirect-3.outputs.valid }}" != "true" ]; then
+          if [ "${STEPS_TEST_REDIRECT_3_OUTPUTS_VALID}" != "true" ]; then
             echo 'Error: Multiple redirects test failed ❌'
             exit 1
           fi
-          if [ "${{ steps.test-redirect-3.outputs.http_code }}" != "200" ]; then
+          if [ "${STEPS_TEST_REDIRECT_3_OUTPUTS_HTTP_CODE}" != "200" ]; then
             echo 'Error: Expected final HTTP 200, got' \
-              '${{ steps.test-redirect-3.outputs.http_code }} ❌'
+              "${STEPS_TEST_REDIRECT_3_OUTPUTS_HTTP_CODE} ❌"
             exit 1
           fi
-          if [ -z "${{ steps.test-redirect-3.outputs.redirect_url }}" ]; then
+          if [ -z "${STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_URL}" ]; then
             echo 'Error: Expected redirect URL to be captured ❌'
             exit 1
           fi
-          if [ "${{ steps.test-redirect-3.outputs.redirect_valid }}" != "true" ]
+          if [ "${STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_VALID}" != "true" ]
           then
             echo 'Error: Expected redirect to be valid ❌'
             exit 1
           fi
-          if [ "${{ steps.test-redirect-3.outputs.redirect_loop }}" != "false" ]
+          if [ "${STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_LOOP}" != "false" ]
           then
             echo 'Error: Expected no redirect loop ❌'
             exit 1
           fi
           echo 'Multiple redirects test passed ✅'
+        env:
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_3_OUTPUTS_VALID: ${{ steps.test-redirect-3.outputs.valid }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_3_OUTPUTS_HTTP_CODE: ${{ steps.test-redirect-3.outputs.http_code }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_URL: ${{ steps.test-redirect-3.outputs.redirect_url }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_VALID: ${{ steps.test-redirect-3.outputs.redirect_valid }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_LOOP: ${{ steps.test-redirect-3.outputs.redirect_loop }}
 
       # Test redirect to invalid URL
       - name: 'Test redirect to invalid URL'
@@ -230,30 +267,41 @@ jobs:
       - name: 'Verify redirect to invalid URL test results'
         shell: bash
         run: |
-          if [ "${{ steps.test-redirect-404.outputs.valid }}" != "false" ]; then
+          if [ "${STEPS_TEST_REDIRECT_404_OUTPUTS_VALID}" != "false" ]; then
             echo 'Error: Redirect to 404 should have failed ❌'
             exit 1
           fi
-          if [ "${{ steps.test-redirect-404.outputs.http_code }}" != "404" ]
+          if [ "${STEPS_TEST_REDIRECT_404_OUTPUTS_HTTP_CODE}" != "404" ]
           then
             echo 'Error: Expected final HTTP 404, got' \
-              '${{ steps.test-redirect-404.outputs.http_code }} ❌'
+              "${STEPS_TEST_REDIRECT_404_OUTPUTS_HTTP_CODE} ❌"
             exit 1
           fi
-          if [ -z "${{ steps.test-redirect-404.outputs.redirect_url }}" ]
+          if [ -z "${STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_URL}" ]
           then
             echo 'Error: Expected redirect URL to be captured ❌'
             exit 1
           fi
-          if [ "${{ steps.test-redirect-404.outputs.redirect_valid }}" \
+          if [ "${STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_VALID}" \
             != "false" ]; then
             echo 'Error: Expected redirect to be invalid ❌'; exit 1
           fi
-          if [ "${{ steps.test-redirect-404.outputs.redirect_loop }}" \
+          if [ "${STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_LOOP}" \
             != "false" ]; then
             echo 'Error: Expected no redirect loop ❌'; exit 1
           fi
           echo 'Redirect to invalid URL test passed ✅'
+        env:
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_404_OUTPUTS_VALID: ${{ steps.test-redirect-404.outputs.valid }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_404_OUTPUTS_HTTP_CODE: ${{ steps.test-redirect-404.outputs.http_code }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_URL: ${{ steps.test-redirect-404.outputs.redirect_url }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_VALID: ${{ steps.test-redirect-404.outputs.redirect_valid }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_LOOP: ${{ steps.test-redirect-404.outputs.redirect_loop }}
 
       # Test 500 Internal Server Error
       - name: 'Test 500 Internal Server Error'
@@ -265,45 +313,49 @@ jobs:
       - name: 'Verify 500 Internal Server Error test results'
         shell: bash
         run: |
-          if [ "${{ steps.test-500.outputs.valid }}" != "false" ]; then
+          if [ "${STEPS_TEST_500_OUTPUTS_VALID}" != "false" ]; then
             echo 'Error: 500 error test should have failed ❌'
             exit 1
           fi
-          if [ "${{ steps.test-500.outputs.http_code }}" != "500" ]; then
+          if [ "${STEPS_TEST_500_OUTPUTS_HTTP_CODE}" != "500" ]; then
             echo 'Error: Expected HTTP 500, got' \
-              '${{ steps.test-500.outputs.http_code }} ❌'
+              "${STEPS_TEST_500_OUTPUTS_HTTP_CODE} ❌"
             exit 1
           fi
           echo '500 Internal Server Error test passed ✅'
+        env:
+          STEPS_TEST_500_OUTPUTS_VALID: ${{ steps.test-500.outputs.valid }}
+          # yamllint disable-line rule:line-length
+          STEPS_TEST_500_OUTPUTS_HTTP_CODE: ${{ steps.test-500.outputs.http_code }}
 
       # Generate comprehensive test summary
       # yamllint disable rule:line-length
       - name: 'Generate test summary'
         shell: bash
         run: |
-          cat >> "$GITHUB_STEP_SUMMARY" << 'EOF'
+          cat >> "$GITHUB_STEP_SUMMARY" << EOF
           # URL Validity Action Test Results 🧪
 
           ## Basic Functionality Tests
           | Test | Valid | HTTP Code | Status |
           |------|-------|-----------|--------|
-          | Google (External) | ${{ steps.test-valid.outputs.valid }} | ${{ steps.test-valid.outputs.http_code }} | ✅ |
-          | Invalid Domain | ${{ steps.test-invalid.outputs.valid }} | ${{ steps.test-invalid.outputs.http_code }} | ✅ |
-          | Linux Foundation | ${{ steps.test-lf.outputs.valid }} | ${{ steps.test-lf.outputs.http_code }} | ✅ |
+          | Google (External) | ${STEPS_TEST_VALID_OUTPUTS_VALID} | ${STEPS_TEST_VALID_OUTPUTS_HTTP_CODE} | ✅ |
+          | Invalid Domain | ${STEPS_TEST_INVALID_OUTPUTS_VALID} | ${STEPS_TEST_INVALID_OUTPUTS_HTTP_CODE} | ✅ |
+          | Linux Foundation | ${STEPS_TEST_LF_OUTPUTS_VALID} | ${STEPS_TEST_LF_OUTPUTS_HTTP_CODE} | ✅ |
 
           ## HTTP Status Code Tests
           | Status Code | Valid | HTTP Code | Status |
           |-------------|-------|-----------|---------|
-          | 200 OK | ${{ steps.test-200.outputs.valid }} | ${{ steps.test-200.outputs.http_code }} | ✅ |
-          | 404 Not Found | ${{ steps.test-404.outputs.valid }} | ${{ steps.test-404.outputs.http_code }} | ✅ |
-          | 500 Server Error | ${{ steps.test-500.outputs.valid }} | ${{ steps.test-500.outputs.http_code }} | ✅ |
+          | 200 OK | ${STEPS_TEST_200_OUTPUTS_VALID} | ${STEPS_TEST_200_OUTPUTS_HTTP_CODE} | ✅ |
+          | 404 Not Found | ${STEPS_TEST_404_OUTPUTS_VALID} | ${STEPS_TEST_404_OUTPUTS_HTTP_CODE} | ✅ |
+          | 500 Server Error | ${STEPS_TEST_500_OUTPUTS_VALID} | ${STEPS_TEST_500_OUTPUTS_HTTP_CODE} | ✅ |
 
           ## Redirect Tests
           | Test | Valid | HTTP Code | Redirect URL | Redirect Valid | Loop | Status |
           |------|-------|-----------|--------------|----------------|------|--------|
-          | Single Redirect | ${{ steps.test-redirect-1.outputs.valid }} | ${{ steps.test-redirect-1.outputs.http_code }} | ${{ steps.test-redirect-1.outputs.redirect_url }} | ${{ steps.test-redirect-1.outputs.redirect_valid }} | ${{ steps.test-redirect-1.outputs.redirect_loop }} | ✅ |
-          | Multiple Redirects | ${{ steps.test-redirect-3.outputs.valid }} | ${{ steps.test-redirect-3.outputs.http_code }} | ${{ steps.test-redirect-3.outputs.redirect_url }} | ${{ steps.test-redirect-3.outputs.redirect_valid }} | ${{ steps.test-redirect-3.outputs.redirect_loop }} | ✅ |
-          | Redirect to 404 | ${{ steps.test-redirect-404.outputs.valid }} | ${{ steps.test-redirect-404.outputs.http_code }} | ${{ steps.test-redirect-404.outputs.redirect_url }} | ${{ steps.test-redirect-404.outputs.redirect_valid }} | ${{ steps.test-redirect-404.outputs.redirect_loop }} | ✅ |
+          | Single Redirect | ${STEPS_TEST_REDIRECT_1_OUTPUTS_VALID} | ${STEPS_TEST_REDIRECT_1_OUTPUTS_HTTP_CODE} | ${STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_URL} | ${STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_VALID} | ${STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_LOOP} | ✅ |
+          | Multiple Redirects | ${STEPS_TEST_REDIRECT_3_OUTPUTS_VALID} | ${STEPS_TEST_REDIRECT_3_OUTPUTS_HTTP_CODE} | ${STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_URL} | ${STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_VALID} | ${STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_LOOP} | ✅ |
+          | Redirect to 404 | ${STEPS_TEST_REDIRECT_404_OUTPUTS_VALID} | ${STEPS_TEST_REDIRECT_404_OUTPUTS_HTTP_CODE} | ${STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_URL} | ${STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_VALID} | ${STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_LOOP} | ✅ |
 
           ## New Features Validated ✨
           - ✅ **HTTP Status Code Capture**: Captures HTTP response codes (200, 404, 500)
@@ -316,3 +368,31 @@ jobs:
           EOF
 
           echo 'All comprehensive URL validity tests completed!'
+        env:
+          STEPS_TEST_VALID_OUTPUTS_VALID: ${{ steps.test-valid.outputs.valid }}
+          STEPS_TEST_VALID_OUTPUTS_HTTP_CODE: ${{ steps.test-valid.outputs.http_code }}
+          STEPS_TEST_INVALID_OUTPUTS_VALID: ${{ steps.test-invalid.outputs.valid }}
+          STEPS_TEST_INVALID_OUTPUTS_HTTP_CODE: ${{ steps.test-invalid.outputs.http_code }}
+          STEPS_TEST_LF_OUTPUTS_VALID: ${{ steps.test-lf.outputs.valid }}
+          STEPS_TEST_LF_OUTPUTS_HTTP_CODE: ${{ steps.test-lf.outputs.http_code }}
+          STEPS_TEST_200_OUTPUTS_VALID: ${{ steps.test-200.outputs.valid }}
+          STEPS_TEST_200_OUTPUTS_HTTP_CODE: ${{ steps.test-200.outputs.http_code }}
+          STEPS_TEST_404_OUTPUTS_VALID: ${{ steps.test-404.outputs.valid }}
+          STEPS_TEST_404_OUTPUTS_HTTP_CODE: ${{ steps.test-404.outputs.http_code }}
+          STEPS_TEST_500_OUTPUTS_VALID: ${{ steps.test-500.outputs.valid }}
+          STEPS_TEST_500_OUTPUTS_HTTP_CODE: ${{ steps.test-500.outputs.http_code }}
+          STEPS_TEST_REDIRECT_1_OUTPUTS_VALID: ${{ steps.test-redirect-1.outputs.valid }}
+          STEPS_TEST_REDIRECT_1_OUTPUTS_HTTP_CODE: ${{ steps.test-redirect-1.outputs.http_code }}
+          STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_URL: ${{ steps.test-redirect-1.outputs.redirect_url }}
+          STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_VALID: ${{ steps.test-redirect-1.outputs.redirect_valid }}
+          STEPS_TEST_REDIRECT_1_OUTPUTS_REDIRECT_LOOP: ${{ steps.test-redirect-1.outputs.redirect_loop }}
+          STEPS_TEST_REDIRECT_3_OUTPUTS_VALID: ${{ steps.test-redirect-3.outputs.valid }}
+          STEPS_TEST_REDIRECT_3_OUTPUTS_HTTP_CODE: ${{ steps.test-redirect-3.outputs.http_code }}
+          STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_URL: ${{ steps.test-redirect-3.outputs.redirect_url }}
+          STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_VALID: ${{ steps.test-redirect-3.outputs.redirect_valid }}
+          STEPS_TEST_REDIRECT_3_OUTPUTS_REDIRECT_LOOP: ${{ steps.test-redirect-3.outputs.redirect_loop }}
+          STEPS_TEST_REDIRECT_404_OUTPUTS_VALID: ${{ steps.test-redirect-404.outputs.valid }}
+          STEPS_TEST_REDIRECT_404_OUTPUTS_HTTP_CODE: ${{ steps.test-redirect-404.outputs.http_code }}
+          STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_URL: ${{ steps.test-redirect-404.outputs.redirect_url }}
+          STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_VALID: ${{ steps.test-redirect-404.outputs.redirect_valid }}
+          STEPS_TEST_REDIRECT_404_OUTPUTS_REDIRECT_LOOP: ${{ steps.test-redirect-404.outputs.redirect_loop }}
