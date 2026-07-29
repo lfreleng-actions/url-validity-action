@@ -155,7 +155,6 @@ runs:
         rm -f "$TEMP_OUTPUT"
 
         # Generate step summary with results table
-        # yamllint disable rule:line-length
         {
           echo "## URL Validity Check Results"
           echo ""
