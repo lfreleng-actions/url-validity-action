@@ -39,11 +39,6 @@ jobs:
         with:
           egress-policy: audit
 
-      - name: "Checkout repository"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
       ### Setup local go-httpbin service for reliable testing ###
       - name: 'Setup local go-httpbin service'
         id: httpbin
@@ -58,7 +53,7 @@ jobs:
       # Test with a valid URL that should always work
       - name: 'Test valid URL (Google)'
         id: test-valid
-        uses: ./
+        uses: $/
         with:
           url: 'https://www.google.com'
 
@@ -76,7 +71,7 @@ jobs:
       # Test with an invalid URL that should fail
       - name: 'Test invalid URL'
         id: test-invalid
-        uses: ./
+        uses: $/
         with:
           url: 'https://this-domain-should-not-exist-12345.invalid'
 
@@ -95,7 +90,7 @@ jobs:
       # Test with Linux Foundation URL (real world example)
       - name: 'Test Linux Foundation URL'
         id: test-lf
-        uses: ./
+        uses: $/
         with:
           url: 'https://linuxfoundation.org'
 
@@ -115,7 +110,7 @@ jobs:
       # Test 200 OK status
       - name: 'Test 200 OK status'
         id: test-200
-        uses: ./
+        uses: $/
         with:
           url: '${{ steps.httpbin.outputs.service-url }}/status/200'
 
@@ -140,7 +135,7 @@ jobs:
       # Test 404 Not Found status
       - name: 'Test 404 Not Found status'
         id: test-404
-        uses: ./
+        uses: $/
         with:
           url: '${{ steps.httpbin.outputs.service-url }}/status/404'
 
@@ -165,7 +160,7 @@ jobs:
       # Test single redirect
       - name: 'Test single redirect'
         id: test-redirect-1
-        uses: ./
+        uses: $/
         with:
           url: '${{ steps.httpbin.outputs.service-url }}/redirect/1'
 
@@ -211,7 +206,7 @@ jobs:
       # Test multiple redirects
       - name: 'Test multiple redirects'
         id: test-redirect-3
-        uses: ./
+        uses: $/
         with:
           url: '${{ steps.httpbin.outputs.service-url }}/redirect/3'
 
@@ -257,7 +252,7 @@ jobs:
       # Test redirect to invalid URL
       - name: 'Test redirect to invalid URL'
         id: test-redirect-404
-        uses: ./
+        uses: $/
         with:
           # yamllint disable rule:line-length
           url: >-
@@ -306,7 +301,7 @@ jobs:
       # Test 500 Internal Server Error
       - name: 'Test 500 Internal Server Error'
         id: test-500
-        uses: ./
+        uses: $/
         with:
           url: '${{ steps.httpbin.outputs.service-url }}/status/500'
 
