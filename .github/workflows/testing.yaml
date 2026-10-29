@@ -38,7 +38,7 @@ jobs:
       - name: 'Setup local go-httpbin service'
         id: httpbin
         # yamllint disable-line rule:line-length
-        uses: lfreleng-actions/go-httpbin-action@b0fcc716270b4975172449a293173e679773d17e # v0.1.6
+        uses: lfreleng-actions/go-httpbin-action@692bf3b759b746041e9cc2eebec5a6006e6d6041 # v0.1.7
         with:
           skip-certificate: 'true'  # Use HTTP for simpler testing
           debug: 'true'
